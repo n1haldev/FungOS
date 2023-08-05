@@ -5,12 +5,23 @@
 #![reexport_test_harness_main = "test_main"]
 
 mod vga_buf;
+mod serial;
 
 use core::panic::PanicInfo;
 
+#[cfg(not(test))]
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
     print!("{} ", info);
+    loop{}
+}
+
+#[cfg(test)]
+#[panic_handler]
+fn panic(info: &PanicInfo) -> ! {
+    serial_println!("[failed]\n");
+    serial_println!("Error: {}\n", info);
+    exit_qemu(QemuExitCode::Failure);
     loop{}
 }
 
@@ -38,9 +49,9 @@ fn test_runner(tests: &[&dyn Fn()]) {
 
 #[test_case]
 fn trivial_assertion() {
-    print!("trivial assertion...");
-    assert_eq!(1, 1);
-    println!("[ok]");
+    serial_print!("trivial assertion...");
+    assert_eq!(1, 2);
+    serial_println!("[ok]");
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
