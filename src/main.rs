@@ -1,11 +1,13 @@
 #![no_std]
 #![no_main]
+#![feature(abi_x86_interrupt)]
 #![feature(custom_test_frameworks)]
 #![test_runner(crate::test_runner)]
 #![reexport_test_harness_main = "test_main"]
 
 mod vga_buf;
 mod serial;
+pub mod interrupts;
 
 use core::panic::PanicInfo;
 
@@ -25,11 +27,17 @@ fn panic(info: &PanicInfo) -> ! {
     loop{}
 }
 
+pub fn init() {
+    interrupts::init_idt();
+}
 // static HELLO: &[u8] = b"Hello World!";
 
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
     println!("Hello World{}", "!");
+
+    init();
+    x86_64::instructions::interrupts::int3();
 
     #[cfg(test)]
     test_main();
