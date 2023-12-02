@@ -1,1 +1,0 @@
-Man I am just following os.phil-opp for now.
